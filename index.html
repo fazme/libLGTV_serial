@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta charset='utf-8' />
+    <meta http-equiv="X-UA-Compatible" content="chrome=1" />
+    <meta name="description" content="Liblgtv serial : Python library to control LG TVs via their serial (RS232) port" />
+
+    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
+
+    <title>Liblgtv serial</title>
+  </head>
+
+  <body>
+
+    <!-- HEADER -->
+    <div id="header_wrap" class="outer">
+        <header class="inner">
+          <a id="forkme_banner" href="https://github.com/fazme/libLGTV_serial">View on GitHub</a>
+
+          <h1 id="project_title">Liblgtv serial</h1>
+          <h2 id="project_tagline">Python library to control LG TVs via their serial (RS232) port</h2>
+
+            <section id="downloads">
+              <a class="zip_download_link" href="https://github.com/fazme/libLGTV_serial/zipball/master">Download this project as a .zip file</a>
+              <a class="tar_download_link" href="https://github.com/fazme/libLGTV_serial/tarball/master">Download this project as a tar.gz file</a>
+            </section>
+        </header>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div id="main_content_wrap" class="outer">
+      <section id="main_content" class="inner">
+        <h1>
+<a name="liblgtv_serial" class="anchor" href="#liblgtv_serial"><span class="octicon octicon-link"></span></a>libLGTV_serial</h1>
+
+<p>libLGTV_serial is a Python library to control LG TVs (or monitors with serial ports) via their serial (RS232) port. It aims to reduce the legwork needed to use this functionality on your TV - simply enter your TV model number and serial port and you're good to go!</p>
+
+<h2>
+<a name="requirements" class="anchor" href="#requirements"><span class="octicon octicon-link"></span></a>Requirements</h2>
+
+<ul>
+<li>Python 2 or 3</li>
+<li>The pyserial module
+
+<ul>
+<li>Windows: <a href="http://pypi.python.org/pypi/pyserial">http://pypi.python.org/pypi/pyserial</a>
+</li>
+<li>Debian/Ubuntu Linux: <code>sudo apt-get install python-serial</code>
+</li>
+</ul>
+</li>
+</ul><h2>
+<a name="supported-modelsoperating-systems" class="anchor" href="#supported-modelsoperating-systems"><span class="octicon octicon-link"></span></a>Supported Models/Operating Systems</h2>
+
+<ul>
+<li>All OSes are supported. If you run into trouble please let me know. </li>
+<li>A large number of LG TVs and monitors are supported -- a full list can be found on <a href="https://github.com/suan/libLGTV_serial/wiki/Supported-TV-Models">the wiki</a>. If your model isn't listed there, you can...
+
+<ul>
+<li>Modify the code and add it yourself. The code is pretty simple and straightforward. Look up the codes from the Owner's Manual on the included CD-ROM or from <a href="http://www.lg.com/us/support/index.jsp">LG's Support Website</a> (Look for the section titled "EXTERNAL CONTROL THROUGH RS-232C"). If you added your model this way I would really appreciate a pull request! =)</li>
+<li>OR</li>
+<li>Create a feature request in <a href="https://github.com/suan/libLGTV_serial/issues">the Issues page</a> or if you don't want to create a github account you can email me at <a href="mailto:yeosuanaik@gmail.com">yeosuanaik@gmail.com</a>
+</li>
+</ul>
+</li>
+</ul><h2>
+<a name="usage" class="anchor" href="#usage"><span class="octicon octicon-link"></span></a>Usage</h2>
+
+<p>Currently I'm using the library through the LGTV.py script, which is invoked everytime certain buttons are pressed on my HDTV remote. The script is also a simple example of what the library can do and should be enough for most needs. (However, there's no reason you can't use the library in other ways, such as in a client-server configuration.)</p>
+
+<p>The following assumes you will just be using the LGTV.py script as I am:</p>
+
+<ol>
+<li>Download the files through the "ZIP" link near the top left of the page.</li>
+<li>Change the model to match that of your TV</li>
+<li>Change the serial port to match what your serial port is named. There is more info on this in the comments in the LGTV.py script.</li>
+<li>You can then run the available_commands.py script to view all available commands for your TV (make sure to set the correct TV model here too).</li>
+<li>To send one of those commands to the TV, all you have to do is invoke the script with the command, like this:</li>
+</ol><pre><code>python LGTV.py --togglepower
+</code></pre>
+
+<h3>
+<a name="toggles" class="anchor" href="#toggles"><span class="octicon octicon-link"></span></a>Toggles</h3>
+
+<p>Toggles are commands that flip between 2 states, such as power on/off. LGTV.py contains an example of how you can add toggles you want to use, namely:</p>
+
+<pre><code>tv.add_toggle('input', 'inputrgbpc', 'inputdigitalcable')
+</code></pre>
+
+<p>From then on, when you pass in '--toggleinput' to the script, it will switch between the 'inputrgbpc' and 'inputdigitalcable' to send to the TV. The 'togglepower' and 'togglemute' toggles are already included for your convenience.</p>
+
+<h3>
+<a name="debouncing" class="anchor" href="#debouncing"><span class="octicon octicon-link"></span></a>Debouncing</h3>
+
+<p>Sometimes a single remote button press is detected as many. For example, EventGhost generates over 10 events every time the power button on my HDTV remote is pressed. libLGTV_serial takes care of this for you, but you have to specify which commands you're having trouble with. In my case, it looks like</p>
+
+<pre><code>tv.debounce('togglepower')
+</code></pre>
+
+<p>This will make sure that all 'togglepower' calls within 0.5 seconds of the first one are ignored. If you want to use a duration other than 0.5 seconds, include it as a 2nd argument, for example:</p>
+
+<pre><code>tv.debounce('togglepower', 0.7)
+</code></pre>
+
+<h3>
+<a name="getting-tv-status" class="anchor" href="#getting-tv-status"><span class="octicon octicon-link"></span></a>Getting TV Status</h3>
+
+<p>Every command sent to the <code>send()</code> method that ends with 'status' or 'level' will return a 2-digit bytestring represnting the status of the item. For some items, you'll need to refer to your model's manual to know what the status code means. For example, if <code>send('powerstatus')</code> returns <code>b'01'</code>, that means that the TV is currently on.</p>
+
+<h3>
+<a name="serialrs232-tips" class="anchor" href="#serialrs232-tips"><span class="octicon octicon-link"></span></a>Serial/RS232 Tips</h3>
+
+<p>Make sure you read your TV model's manual to see whether you need a "crossover/null-modem" or "straight-through" cable or adapter, and buy/use the correct one.</p>
+
+<h2>
+<a name="todobugscontributions" class="anchor" href="#todobugscontributions"><span class="octicon octicon-link"></span></a>TODO/Bugs/Contributions</h2>
+
+<p>I'll add more features as there's demand for them. Some that I forsee are:</p>
+
+<ul>
+<li>Covering more of the available commands</li>
+<li>Switching to a listening server model to improve performance</li>
+</ul><p>Either create a feature request on the issues page or email me if theres stuff you'd like added.</p>
+
+<p>Same goes for any bugs you find, create an issue or email me.</p>
+
+<p>And contributions are very much welcome!</p>
+
+<h2>
+<a name="credits" class="anchor" href="#credits"><span class="octicon octicon-link"></span></a>Credits</h2>
+
+<ul>
+<li>
+<a href="http://www.thelazysysadmin.net/2009/05/rs232-control-lg-lcd-tv-mythtv/">Jon Smith's blog post</a> which is the core of the library</li>
+<li>
+<a href="http://www.evanfosmark.com/2009/01/cross-platform-file-locking-support-in-python/">Evan Fosmark</a> for filelock.py</li>
+</ul>
+      </section>
+    </div>
+
+    <!-- FOOTER  -->
+    <div id="footer_wrap" class="outer">
+      <footer class="inner">
+        <p class="copyright">Liblgtv serial maintained by <a href="https://github.com/fazme">fazme</a></p>
+        <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
+      </footer>
+    </div>
+
+    
+
+  </body>
+</html>
